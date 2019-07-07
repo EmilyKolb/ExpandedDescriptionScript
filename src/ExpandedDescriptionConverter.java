@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.io.*;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,53 +9,72 @@ import java.util.regex.Pattern;
 public class ExpandedDescriptionConverter {
     private String inputFile;
     private Scanner s = null;
+
     public ExpandedDescriptionConverter(String inputFile){
         this.inputFile = inputFile;
 
         try{
-
             s = new Scanner(new File(inputFile));
         }
         catch(Exception e){
             System.out.println("There was an error opening the file.");
         }
         returnDeleter();
-
     }
 
     public void returnDeleter(){
         Scanner t = s.useDelimiter("\\s\n\\s\\s\\s");
-        //Scanner t = s.useDelimiter("\n\n\\s\n");
-        String nextLine = "";
+        String nextDescription = "";
         while (t.hasNext()){
-            nextLine = t.next();
-            outtimeDeleter(nextLine);
+            nextDescription = t.next();
+            outtimeDeleter(nextDescription);
         }
-
-
     }
 
-    public void outtimeDeleter(String line){
-
+    public void outtimeDeleter(String chunk){
+        //System.out.println(chunk);
 
         Pattern lowerP = Pattern.compile("scripted to");
-        Matcher lowerM = lowerP.matcher(line);
+        Matcher lowerM = lowerP.matcher(chunk);
         Pattern upperP = Pattern.compile("Scripted to");
-        Matcher upperM = upperP.matcher(line);
-        boolean isSlate = (lowerM.find() || upperM.find());
+        Matcher upperM = upperP.matcher(chunk);
+
+        Pattern timecodeP = Pattern.compile("\\d\\d:\\d\\d:\\d\\d:\\d\\d");
+        Matcher timecodeM = timecodeP.matcher(chunk);
+
+        boolean hasFourTimecodes = true;
+
+        if (chunk.length() > 24) {
+            hasFourTimecodes = timecodeM.find(24);
+        }
+
+        boolean isSlate = (lowerM.find() || upperM.find()) && !hasFourTimecodes;
 
         Pattern wordPattern = Pattern.compile("\\w");
-        Matcher wordMatcher = wordPattern.matcher(line);
+        Matcher wordMatcher = wordPattern.matcher(chunk);
         boolean hasWords = wordMatcher.find();
 
-        line = line.trim();
-
-        if (!isSlate && hasWords) {
-            System.out.println(line);
-            System.out.println("---------------------");
+        if (!hasWords || isSlate) {
+            return;
         }
-        descriptionWriter(line);
+
+        chunk = chunk.trim();
+        String[] wholeLine = chunk.split("\n");
+        String fullOuttime = wholeLine[0];
+        if (fullOuttime.length() > 10) {
+            fullOuttime = fullOuttime.substring(0, 11);
+        }
+
+        String[] descriptionArray = Arrays.copyOfRange(wholeLine,1,wholeLine.length);
+        String descriptionText = String.join("",descriptionArray);
+        String fullDescription = fullOuttime + "\n" + descriptionText;
+
+        descriptionWriter(fullDescription);
+
+
     }
+
+
 
     public void descriptionWriter(String line){
 
@@ -88,16 +108,16 @@ public class ExpandedDescriptionConverter {
 
     public static void main(String[] args){
         String fileName = "";
-//        JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-//        int returnVal = chooser.showOpenDialog(null);
-//
-//        if (returnVal == chooser.APPROVE_OPTION) {
-//            File selectedFile = chooser.getSelectedFile();
-//            fileName = selectedFile.getAbsolutePath();
-//        }
+        JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        int returnVal = chooser.showOpenDialog(null);
+
+        if (returnVal == chooser.APPROVE_OPTION) {
+            File selectedFile = chooser.getSelectedFile();
+            fileName = selectedFile.getAbsolutePath();
+        }
         //fileName = "/Users/emilykolb/Desktop/PCL_DIAMOND_2021.TXT";
-//        fileName = "/Users/emilykolb/Desktop/PCL_SHIP_GOLDEN_40_061819_SG.TXT";
-        fileName = "/Users/emilykolb/Desktop/PCL_SHIP_STAR_50_061819_SG.TXT";
+        //fileName = "/Users/emilykolb/Desktop/PCL_SHIP_GOLDEN_40_061819_SG.TXT";
+        //fileName = "/Users/emilykolb/Desktop/PCL_SHIP_STAR_50_061819_SG.TXT";
 
         //System.out.println(fileName);
 
