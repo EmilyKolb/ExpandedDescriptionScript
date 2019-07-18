@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 public class ExpandedDescriptionConverter {
     private String inputFile;
     private Scanner s = null;
+    boolean openedOnce = false;
 
     public ExpandedDescriptionConverter(String inputFile){
         this.inputFile = inputFile;
@@ -38,6 +39,10 @@ public class ExpandedDescriptionConverter {
         Matcher lowerM = lowerP.matcher(chunk);
         Pattern upperP = Pattern.compile("Scripted to");
         Matcher upperM = upperP.matcher(chunk);
+        Pattern presentP = Pattern.compile("script to");
+        Matcher presentM = presentP.matcher(chunk);
+        Pattern presentUP = Pattern.compile("Script to");
+        Matcher presentUM = presentUP.matcher(chunk);
 
         Pattern timecodeP = Pattern.compile("\\d\\d:\\d\\d:\\d\\d:\\d\\d");
         Matcher timecodeM = timecodeP.matcher(chunk);
@@ -48,7 +53,7 @@ public class ExpandedDescriptionConverter {
             hasFourTimecodes = timecodeM.find(24);
         }
 
-        boolean isSlate = (lowerM.find() || upperM.find()) && !hasFourTimecodes;
+        boolean isSlate = (lowerM.find() || upperM.find() || presentM.find() || presentUM.find()) && !hasFourTimecodes;
 
         Pattern wordPattern = Pattern.compile("\\w");
         Matcher wordMatcher = wordPattern.matcher(chunk);
@@ -80,8 +85,11 @@ public class ExpandedDescriptionConverter {
 
         boolean fileOpened = false;
         PrintWriter toFile = null;
-        String newFileName = inputFile.replace(".TXT"," Expanded Description Script");
-        newFileName = newFileName.replace(".txt"," Expanded Description Script");
+        String[] fileChunks = inputFile.split("/");
+        String title = (fileChunks[fileChunks.length-1]);
+        String newFileName = inputFile.replace(".TXT","_ApprovalScript.TXT");
+        newFileName = newFileName.replace(".txt","_ApprovalScript.txt");
+
 
         try{
             FileWriter fw = new FileWriter(newFileName,true);
@@ -96,6 +104,12 @@ public class ExpandedDescriptionConverter {
         }
 
         if (fileOpened){
+            if (!openedOnce){
+                toFile.println(title);
+                toFile.println("Description Approval Script");
+                toFile.print("\n");
+                openedOnce = true;
+            }
             toFile.println(line);
             toFile.print("\n");
         }
@@ -115,7 +129,7 @@ public class ExpandedDescriptionConverter {
             File selectedFile = chooser.getSelectedFile();
             fileName = selectedFile.getAbsolutePath();
         }
-        //fileName = "/Users/emilykolb/Desktop/PCL_DIAMOND_2021.TXT";
+
         //fileName = "/Users/emilykolb/Desktop/PCL_SHIP_GOLDEN_40_061819_SG.TXT";
         //fileName = "/Users/emilykolb/Desktop/PCL_SHIP_STAR_50_061819_SG.TXT";
 

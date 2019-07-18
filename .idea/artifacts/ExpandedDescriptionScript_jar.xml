@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="ExpandedDescriptionScript:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ExpandedDescriptionScript_jar</output-path>
+    <root id="archive" name="ExpandedDescriptionScript.jar">
+      <element id="module-output" name="ExpandedDescriptionScript" />
+    </root>
+  </artifact>
+</component>
