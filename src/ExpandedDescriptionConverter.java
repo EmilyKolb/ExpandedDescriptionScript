@@ -87,6 +87,8 @@ public class ExpandedDescriptionConverter {
         PrintWriter toFile = null;
         String[] fileChunks = inputFile.split("/");
         String title = (fileChunks[fileChunks.length-1]);
+        title = title.replace(".txt","");
+        title = title.replace(".TXT","");
         String newFileName = inputFile.replace(".TXT","_ApprovalScript.TXT");
         newFileName = newFileName.replace(".txt","_ApprovalScript.txt");
 
